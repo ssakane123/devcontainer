@@ -3,8 +3,8 @@
 #   - Pull Request : 変更のあった言語のイメージだけ build (push しない)
 #   - main への push: 変更のあった言語のイメージだけ build & push
 #
-# イメージ名 = ghcr.io/<オーナー>/devcontainer-<lang>:<.devcontainer/IMAGE_VERSION の内容>
-# 破壊的変更をしたら .devcontainer/IMAGE_VERSION の数字を上げる。
+# イメージ名 = ghcr.io/<オーナー>/devcontainer-<lang>:<IMAGE_VERSION の内容>
+# 破壊的変更をしたら IMAGE_VERSION の数字を上げる。
 #
 # 言語を追加するときは、.devcontainer/<lang>/ を作り、
 #   1) 下の paths と changes の filters に <lang> を追加
@@ -17,11 +17,13 @@ on:
   pull_request:
     paths:
       - ".devcontainer/**"
+      - "IMAGE_VERSION"
       - ".github/workflows/*devcontainer*.yml"
   push:
     branches: [main]
     paths:
       - ".devcontainer/**"
+      - "IMAGE_VERSION"
       - ".github/workflows/*devcontainer*.yml"
 
 concurrency:
@@ -53,7 +55,7 @@ jobs:
             python:
               - '.devcontainer/python/**'
               - '.devcontainer/common/**'
-              - '.devcontainer/IMAGE_VERSION'
+              - 'IMAGE_VERSION'
               - '.github/workflows/*devcontainer*.yml'
 
   python:
