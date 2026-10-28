@@ -1,0 +1,13 @@
+#!/bin/sh
+set -eu
+
+KEYFILE="$HOME/.claude/cliproxy-client-key"
+if [ ! -s "$KEYFILE" ]; then
+  echo "claudex: $KEYFILE が無いか空です。" >&2
+  echo "  host の ~/.claude/cliproxyapi/cliproxy-client-key を readonly bind しています。" >&2
+  echo "  Mac で chezmoi apply（run_after_op-inject.sh が 1Password から描画）を実行し、" >&2
+  echo "  コンテナを開き直してください。" >&2
+  exit 1
+fi
+
+exec claude "$@"

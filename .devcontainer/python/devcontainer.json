@@ -1,0 +1,38 @@
+{
+  "name": "python-dev",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "options": [
+      "--build-context",
+      "common=${localWorkspaceFolder}/.devcontainer/common"
+    ]
+  },
+  "remoteUser": "vscode",
+  "mounts": [
+    "source=claude-code-config,target=/home/vscode/.claude,type=volume",
+    "source=claude-code-npm-cache,target=/home/vscode/.npm,type=volume",
+    "source=${localEnv:HOME}/.claude/CLAUDE.md,target=/home/vscode/.claude/CLAUDE.md,type=bind",
+    "source=${localEnv:HOME}/.claude/.mcp.json,target=${containerWorkspaceFolder}/.mcp.json,type=bind,readonly",
+    "source=${localEnv:HOME}/.config/git/ignore,target=/home/vscode/.config/git/ignore,type=bind,readonly",
+    "source=${localEnv:HOME}/.claude/cliproxyapi/cliproxy-client-key,target=/home/vscode/.claude/cliproxy-client-key,type=bind,readonly"
+  ],
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "zsh",
+        "terminal.integrated.profiles.linux": {
+          "zsh": { "path": "/usr/bin/zsh" }
+        }
+      }
+    }
+  },
+  "containerEnv": {
+    "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
+    "ENABLE_TOOL_SEARCH": "true",
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
+    "NODE_USE_SYSTEM_CA": "1",
+    "DISABLE_AUTOUPDATER": "1",
+    "CLAUDE_CODE_NO_FLICKER": "1"
+  },
+  "postCreateCommand": "bash /usr/local/share/devcontainer/post-create.sh"
+}
