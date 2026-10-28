@@ -29,12 +29,6 @@ WORKDIR ${HOME}
 COPY --from=common install-claude-code.sh /tmp/install-claude-code.sh
 RUN bash /tmp/install-claude-code.sh
 
-# Install uv
-ARG UV_VERSION=0.11.11
-# PATH 環境変数を書き換えないようにする
-ENV UV_NO_MODIFY_PATH=1
-RUN curl -fsSL https://astral.sh/uv/${UV_VERSION}/install.sh | sh
-
 USER root
 RUN install -d -m 755 /etc/claude-code /etc/claude-code-defaults /usr/local/share/devcontainer /usr/local/bin
 COPY --from=common .zshrc /home/${USERNAME}/.zshrc
