@@ -47,13 +47,13 @@ jobs:
       - id: registry
         run: echo "name=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_OUTPUT"
 
-      # .devcontainer/IMAGE_VERSION からイメージタグを取り出す (整数のみ許可)
+      # IMAGE_VERSION からイメージタグを取り出す (整数のみ許可)
       - id: version
         run: |
           set -euo pipefail
-          version=$(tr -d '[:space:]' < .devcontainer/IMAGE_VERSION)
+          version=$(tr -d '[:space:]' < IMAGE_VERSION)
           if ! [[ "$version" =~ ^[0-9]+$ ]]; then
-            echo "::error::.devcontainer/IMAGE_VERSION は整数で記載してください (現在: '${version}')"
+            echo "::error::IMAGE_VERSION は整数で記載してください (現在: '${version}')"
             exit 1
           fi
           echo "value=${version}" >> "$GITHUB_OUTPUT"
