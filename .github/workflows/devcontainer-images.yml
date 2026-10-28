@@ -1,0 +1,70 @@
+# devcontainer イメージを GitHub Actions で build し、GHCR に push する。
+#
+#   - Pull Request : 変更のあった言語のイメージだけ build (push しない)
+#   - main への push: 変更のあった言語のイメージだけ build & push
+#
+# イメージ名 = ghcr.io/<オーナー>/devcontainer-<lang>:<IMAGE_VERSION の内容>
+# 破壊的変更をしたら IMAGE_VERSION の数字を上げる。
+#
+# 言語を追加するときは、.devcontainer/<lang>/ を作り、
+#   1) 下の paths と changes の filters に <lang> を追加
+#   2) changes.outputs に <lang> を追加
+#   3) python ジョブをコピーして <lang> ジョブを追加
+# する。
+name: devcontainer-images
+
+on:
+  pull_request:
+    paths:
+      - ".devcontainer/**"
+      - "IMAGE_VERSION"
+      - ".github/workflows/*devcontainer*.yml"
+  push:
+    branches: [main]
+    paths:
+      - ".devcontainer/**"
+      - "IMAGE_VERSION"
+      - ".github/workflows/*devcontainer*.yml"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  # PR は新しい push で古い実行を止める。main は止めない
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  # どの言語に変更があったかを調べる
+  changes:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      python: ${{ steps.filter.outputs.python }}
+    steps:
+      # https://github.com/actions/checkout
+      - uses: actions/checkout@v7
+      # https://github.com/dorny/paths-filter
+      - id: filter
+        uses: dorny/paths-filter@v4
+        with:
+          # common / IMAGE_VERSION / workflow の変更は全言語が対象
+          filters: |
+            python:
+              - '.devcontainer/python/**'
+              - '.devcontainer/common/**'
+              - 'IMAGE_VERSION'
+              - '.github/workflows/*devcontainer*.yml'
+
+  python:
+    needs: changes
+    if: needs.changes.outputs.python == 'true'
+    permissions:
+      contents: read
+      packages: write
+    uses: ./.github/workflows/_build-devcontainer-image.yml
+    with:
+      lang: python
+      push: ${{ github.event_name == 'push' }}
