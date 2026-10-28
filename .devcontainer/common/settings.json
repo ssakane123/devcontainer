@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "hooks": {},
+  "statusLine": {
+    "type": "command",
+    "command": "node \"${HOME}/.claude/hud/omc-hud.mjs\""
+  },
+  "omcHud": {},
+  "enabledPlugins": {},
+  "extraKnownMarketplaces": {},
+  "model": "opus[1m]",
+  "modelSettings": {
+    "claude-haiku-5-5": {
+      "effortLevel": "high"
+    },
+    "claude-sonnet-5-5": {
+      "effortLevel": "high"
+    },
+    "claude-opus-5-5": {
+      "effortLevel": "high"
+    },
+    "claude-fable-5-1": {
+      "effortLevel": "high"
+    },
+    "gpt-6-luna": {
+      "effortLevel": "high"
+    },
+    "gpt-5.6-terra": {
+      "effortLevel": "high"
+    },
+    "gpt-6.1-sol": {
+      "effortLevel": "high"
+    },
+    "gpt-6-astra": {
+      "effortLevel": "high"
+    }
+  },
+  "theme": "dark",
+  "attribution": {
+    "commit": "Co-authored-by: Claude Code <noreply@anthropic.com>"
+  }
+}
