@@ -1,15 +1,18 @@
-# devcontainer イメージを GitHub Actions で build し、GHCR に push する。
+# devcontainer イメージ (言語別 + egress proxy) を GitHub Actions で build し、GHCR に push する。
 #
-#   - Pull Request : 変更のあった言語のイメージだけ build (push しない)
-#   - main への push: 変更のあった言語のイメージだけ build & push
+#   - Pull Request : 変更のあったイメージだけ build (push しない)
+#   - main への push: 変更のあったイメージだけ build & push
 #
-# イメージ名 = ghcr.io/<オーナー>/devcontainer-<lang>:<IMAGE_VERSION の内容>
-# 破壊的変更をしたら IMAGE_VERSION の数字を上げる。
+# イメージ名 = ghcr.io/<オーナー>/devcontainer-<name>:<バージョンファイルの内容>
+#   (name: python, proxy, ...  = .devcontainer/<name>/ のディレクトリ名)
+# バージョンファイルはイメージ系統ごとに分ける。破壊的変更をしたら該当ファイルの数字を上げる。
+#   - IMAGE_VERSION       : 言語別 devcontainer イメージ (python, 今後 go など)
+#   - PROXY_IMAGE_VERSION : egress proxy イメージ
 #
-# 言語を追加するときは、.devcontainer/<lang>/ を作り、
-#   1) 下の paths と changes の filters に <lang> を追加
-#   2) changes.outputs に <lang> を追加
-#   3) python ジョブをコピーして <lang> ジョブを追加
+# イメージを追加するときは、.devcontainer/<name>/ を作り、
+#   1) changes の filters に <name> を追加
+#   2) changes.outputs に <name> を追加
+#   3) python ジョブをコピーして <name> ジョブを追加
 # する。
 name: devcontainer-images
 
@@ -18,12 +21,14 @@ on:
     paths:
       - ".devcontainer/**"
       - "IMAGE_VERSION"
+      - "PROXY_IMAGE_VERSION"
       - ".github/workflows/*devcontainer*.yml"
   push:
     branches: [main]
     paths:
       - ".devcontainer/**"
       - "IMAGE_VERSION"
+      - "PROXY_IMAGE_VERSION"
       - ".github/workflows/*devcontainer*.yml"
 
 concurrency:
@@ -43,6 +48,7 @@ jobs:
       pull-requests: read
     outputs:
       python: ${{ steps.filter.outputs.python }}
+      proxy: ${{ steps.filter.outputs.proxy }}
     steps:
       # https://github.com/actions/checkout
       - uses: actions/checkout@v7
@@ -50,12 +56,18 @@ jobs:
       - id: filter
         uses: dorny/paths-filter@v4
         with:
-          # common / IMAGE_VERSION / workflow の変更は全言語が対象
+          # workflow の変更は全イメージが対象。
+          # バージョンファイルは系統ごと (python: IMAGE_VERSION / proxy: PROXY_IMAGE_VERSION)。
+          # common は python だけが使う (proxy は使わない)
           filters: |
             python:
               - '.devcontainer/python/**'
               - '.devcontainer/common/**'
               - 'IMAGE_VERSION'
+              - '.github/workflows/*devcontainer*.yml'
+            proxy:
+              - '.devcontainer/proxy/**'
+              - 'PROXY_IMAGE_VERSION'
               - '.github/workflows/*devcontainer*.yml'
 
   python:
@@ -66,5 +78,19 @@ jobs:
       packages: write
     uses: ./.github/workflows/_build-devcontainer-image.yml
     with:
-      lang: python
+      name: python
+      version-file: IMAGE_VERSION
+      push: ${{ github.event_name == 'push' }}
+
+  # egress proxy (squid)。python とは別の PROXY_IMAGE_VERSION でタグ付けする
+  proxy:
+    needs: changes
+    if: needs.changes.outputs.proxy == 'true'
+    permissions:
+      contents: read
+      packages: write
+    uses: ./.github/workflows/_build-devcontainer-image.yml
+    with:
+      name: proxy
+      version-file: PROXY_IMAGE_VERSION
       push: ${{ github.event_name == 'push' }}
