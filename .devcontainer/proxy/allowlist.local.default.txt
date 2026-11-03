@@ -1,0 +1,2 @@
+# ★**ここに実際の許可先を書かないこと。**
+local-allowlist-empty.invalid
