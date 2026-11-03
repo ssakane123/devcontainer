@@ -1,0 +1,10 @@
+# このリポジトリ固有の egress 許可先 — **共通 allowlist への追加分**
+# ═══ 書式 ═══
+#   1 行 1 件。**完全一致の FQDN のみ。** `#` 以降はコメント。
+#
+#     nshield.entrust.com          ← ○
+#     .entrust.com                 ← ✗ 先頭ドットは subtree 指定。拒否される（下記）
+#     https://nshield.entrust.com  ← ✗ scheme も path も port も書けない
+#     10.0.0.1                     ← ✗ IP は書けない（名前の ACL である）
+#
+# ── ここから下に 1 行 1 件で書く ──────────────────────────────────────────────
