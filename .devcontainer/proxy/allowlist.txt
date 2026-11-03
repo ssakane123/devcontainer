@@ -1,0 +1,50 @@
+# egress allowlist
+# ── Anthropic / Claude Code 本体
+api.anthropic.com
+claude.ai
+claude.com
+platform.claude.com
+downloads.claude.ai
+code.claude.com
+statsig.anthropic.com
+storage.googleapis.com
+
+# ── VS Code
+update.code.visualstudio.com
+vscode.download.prss.microsoft.com
+.vscode-cdn.net
+marketplace.visualstudio.com
+.gallerycdn.vsassets.io
+.gallery.vsassets.io
+
+# ── 4 言語のパッケージマネージャ
+pypi.org
+files.pythonhosted.org
+registry.npmjs.org
+proxy.golang.org
+sum.golang.org
+dl.google.com
+go.dev
+pkg.go.dev
+repo.maven.apache.org
+repo1.maven.org
+services.gradle.org
+plugins.gradle.org
+
+# ── git over HTTPS
+github.com
+release-assets.githubusercontent.com
+raw.githubusercontent.com
+
+# ── GitHub Copilot
+api.github.com
+api.githubcopilot.com
+api.business.githubcopilot.com
+proxy.business.githubcopilot.com
+
+# ── 文書サイト
+datatracker.ietf.org
+
+# ── Docker
+hub.docker.com
+docs.docker.com

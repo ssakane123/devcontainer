@@ -1,15 +1,19 @@
 # yaml-language-server: $schema=https://www.schemastore.org/github-workflow.json
-# devcontainer イメージ 1 言語分の build (& push) を行う再利用ワークフロー。
+# devcontainer 関連イメージ 1 つ分の build (& push) を行う再利用ワークフロー。
 # devcontainer-images.yml から呼び出される。
 #
-# イメージ名: ghcr.io/<owner>/devcontainer-<lang>:<IMAGE_VERSION の内容>
+# イメージ名: ghcr.io/<owner>/devcontainer-<name>:<version-file の内容>
 name: _build-devcontainer-image
 
 on:
   workflow_call:
     inputs:
-      lang:
-        description: "言語名 = .devcontainer/<lang>/ のディレクトリ名 (例: python)"
+      name:
+        description: "イメージ名の suffix = .devcontainer/<name>/ のディレクトリ名 (例: python, proxy)"
+        type: string
+        required: true
+      version-file:
+        description: "イメージタグを記載したファイル (リポジトリルートからの相対パス。例: IMAGE_VERSION)"
         type: string
         required: true
       push:
@@ -22,8 +26,8 @@ permissions:
 
 jobs:
   build:
-    name: build devcontainer-${{ inputs.lang }}
-    # ベースイメージ (ghcr.io/<owner>/<lang>) が arm64 のため
+    name: build devcontainer-${{ inputs.name }}
+    # ベースイメージ (ghcr.io/<owner>/rocky9, python など) が arm64 のため
     runs-on: ubuntu-24.04-arm
     permissions:
       contents: read
@@ -35,7 +39,7 @@ jobs:
       # https://github.com/docker/setup-buildx-action
       - uses: docker/setup-buildx-action@v4
 
-      # push 用、およびベースイメージ (ghcr.io/<owner>/<lang>) の pull 用
+      # push 用、およびベースイメージ (ghcr.io/<owner>/rocky9, python など) の pull 用
       # https://github.com/docker/login-action
       - uses: docker/login-action@v4
         with:
@@ -47,13 +51,15 @@ jobs:
       - id: registry
         run: echo "name=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_OUTPUT"
 
-      # IMAGE_VERSION からイメージタグを取り出す (整数のみ許可)
+      # version-file からイメージタグを取り出す (整数のみ許可)
       - id: version
+        env:
+          VERSION_FILE: ${{ inputs.version-file }}
         run: |
           set -euo pipefail
-          version=$(tr -d '[:space:]' < IMAGE_VERSION)
+          version=$(tr -d '[:space:]' < "${VERSION_FILE}")
           if ! [[ "$version" =~ ^[0-9]+$ ]]; then
-            echo "::error::IMAGE_VERSION は整数で記載してください (現在: '${version}')"
+            echo "::error::${VERSION_FILE} は整数で記載してください (現在: '${version}')"
             exit 1
           fi
           echo "value=${version}" >> "$GITHUB_OUTPUT"
@@ -62,7 +68,7 @@ jobs:
       - id: meta
         uses: docker/metadata-action@v6
         with:
-          images: ${{ steps.registry.outputs.name }}/devcontainer-${{ inputs.lang }}
+          images: ${{ steps.registry.outputs.name }}/devcontainer-${{ inputs.name }}
           tags: |
             type=raw,value=${{ steps.version.outputs.value }}
             type=sha,prefix=sha-
@@ -70,13 +76,14 @@ jobs:
       # https://github.com/docker/build-push-action
       - uses: docker/build-push-action@v7
         with:
-          context: .devcontainer/${{ inputs.lang }}
-          # Dockerfile 内の `COPY --from=common` 用 (devcontainer.json の build.options 相当)
+          context: .devcontainer/${{ inputs.name }}
+          # Dockerfile 内の `COPY --from=common` 用 (compose の additional_contexts 相当)。
+          # common を参照しないイメージ (proxy) では使われないだけで害はない
           build-contexts: |
             common=.devcontainer/common
           platforms: linux/arm64
           push: ${{ inputs.push }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha,scope=devcontainer-${{ inputs.lang }}
-          cache-to: type=gha,mode=max,scope=devcontainer-${{ inputs.lang }}
+          cache-from: type=gha,scope=devcontainer-${{ inputs.name }}
+          cache-to: type=gha,mode=max,scope=devcontainer-${{ inputs.name }}

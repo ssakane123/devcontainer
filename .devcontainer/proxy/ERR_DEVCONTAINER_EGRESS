@@ -1,0 +1,9 @@
+<!DOCTYPE html>
+<html>
+   <head><meta charset="utf-8"><title>Egress blocked</title></head>
+<body>
+   <h1>X-DEVCONTAINER-EGRESS-DENIED</h1>
+   <p>This devcontainer only reaches destinations on the egress allowlist.
+      The request to <b>%H</b> was refused by the proxy.</p>
+   </body>
+</html>
