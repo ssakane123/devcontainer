@@ -3,7 +3,7 @@ set -euo pipefail
 
 : "${HOME:?must be set by the Dockerfile ENV HOME line}"
 
-CLAUDE_CODE_VERSION=2.1.310
+CLAUDE_CODE_VERSION=2.1.318
 
 curl -fsSL https://claude.ai/install.sh | bash -s -- "${CLAUDE_CODE_VERSION}"
 
