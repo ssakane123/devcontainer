@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-OMC_VERSION=5.7.9
+OMC_VERSION=5.7.30
 
 npm install -g "oh-my-claude-sisyphus@${OMC_VERSION}"
 
